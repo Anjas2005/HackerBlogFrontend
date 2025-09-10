@@ -1,0 +1,22 @@
+/* index.css or globals.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root { /* #root is the default id for the main div in create-react-app */
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* This ensures that your background gradient on the body 
+  or a parent element will be consistent and smooth.
+  It also prevents horizontal scrolling from your animated blobs.
+*/
+body {
+  overflow-x: hidden;
+}
