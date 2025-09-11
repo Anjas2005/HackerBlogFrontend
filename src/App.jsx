@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { ExternalLink, MessageCircle, ArrowUp, Clock, User, TrendingUp, Zap, Star, Flame, Heart, AlertTriangle, Info } from 'lucide-react';
-
+import API_BASE from "./config";
 // Demo data fallback
 const demoData = [
   {
