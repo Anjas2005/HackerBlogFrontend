@@ -50,8 +50,8 @@ function App() {
   const pollingTimer = useRef(null);
 
 
-  // ==================================================================
-  // --- MODIFIED useEffect FUNCTION AS REQUESTED ---
+    // ==================================================================
+  // --- MODIFIED useEffect FUNCTION ---
   // ==================================================================
   useEffect(() => {
     const fetchNews = async () => {
@@ -60,28 +60,29 @@ function App() {
       }
 
       try {
-        // Replace with your actual API URL from .env if needed
         const response = await fetch(`${API_BASE}`);
 
         if (!response.ok) {
-          // For this example, we'll stop polling on error
           clearTimeout(pollingTimer.current);
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
         const jsonData = await response.json();
         
+        // Add categories and sort by rank
         const dataWithCategory = jsonData.map(story => ({
           ...story,
           category: getCategoryFromTitle(story.Title)
         }));
+        
+        // --- ADDED: Sort the data by the Rank property ---
+        dataWithCategory.sort((a, b) => a.Rank - b.Rank);
         
         setData(dataWithCategory);
 
       } catch (err) {
         console.error("Failed to fetch news:", err);
         setError(err.message);
-        // Stop polling if there's an error to prevent spamming a broken endpoint
         clearTimeout(pollingTimer.current);
       } finally {
         setLoading(false);
@@ -92,16 +93,14 @@ function App() {
       }
     };
 
-    fetchNews(); // Initial fetch
+    fetchNews();
 
-    // Cleanup function to stop polling when the component unmounts
     return () => {
       if (pollingTimer.current) {
         clearTimeout(pollingTimer.current);
       }
     };
-  }, []); // Empty dependency array ensures this runs only once to start the polling
-
+  }, []);
 
   const handleCardClick = (link) => {
     window.open(link, '_blank', 'noopener,noreferrer');
