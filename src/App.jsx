@@ -98,7 +98,7 @@ function App() {
       }
 
       try {
-        const response = await fetch(`${API_BASE}`);
+        const response = await fetch(`${VITE_API_URL}`);
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
