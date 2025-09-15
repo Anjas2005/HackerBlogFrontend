@@ -89,7 +89,7 @@ function App() {
         setTimeout(() => setIsUpdating(false), 1000); 
         
         // Schedule the next fetch in 10 seconds
-        pollingTimer.current = setTimeout(fetchNews, 100000);
+        pollingTimer.current = setTimeout(fetchNews, 10000);
       }
     };
 
