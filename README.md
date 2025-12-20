@@ -1,7 +1,7 @@
 ## Frontend 
 https://hackerblogfrontend.onrender.com/
 ## Scraper 
-###(sometimes due to resource constraint render ###stops the scraper and backend so run first ###scraper and then backend)
+(sometimes due to resource constraint render stops the scraper and backend so run first scraper and then backend)
 https://hackernewsscraper-7x6b.onrender.com
 
 # React + Vite
