@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'; // Added useRef
 import { ExternalLink, MessageCircle, ArrowUp, Clock, User, TrendingUp, Zap, Star, Flame, Heart, AlertTriangle } from 'lucide-react';
 import API_BASE from "./config";
+
 // Mock data is no longer used for setting state, but can be kept for reference
 const mockData = [
   // ...
@@ -26,38 +27,30 @@ const categoryIcons = {
   default: TrendingUp
 };
 
-// Helper function to guess category from title, required by the new useEffect
+// Helper function to guess category from title
 const getCategoryFromTitle = (title) => {
-    const lowerTitle = title.toLowerCase();
-    if (lowerTitle.includes('security') || lowerTitle.includes('compromised') || lowerTitle.includes('vulnerability')) return 'security';
-    if (lowerTitle.startsWith('show hn:')) return 'show';
-    if (lowerTitle.startsWith('ask hn:')) return 'ask';
-    if (lowerTitle.includes('ai') || lowerTitle.includes('machine learning') || lowerTitle.includes('llm')) return 'ai';
-    if (lowerTitle.includes('quantum') || lowerTitle.includes('science') || lowerTitle.includes('nasa')) return 'science';
-    return 'tech'; // Default category
+  const lowerTitle = title.toLowerCase();
+  if (lowerTitle.includes('security') || lowerTitle.includes('compromised') || lowerTitle.includes('vulnerability')) return 'security';
+  if (lowerTitle.startsWith('show hn:')) return 'show';
+  if (lowerTitle.startsWith('ask hn:')) return 'ask';
+  if (lowerTitle.includes('ai') || lowerTitle.includes('machine learning') || lowerTitle.includes('llm')) return 'ai';
+  if (lowerTitle.includes('quantum') || lowerTitle.includes('science') || lowerTitle.includes('nasa')) return 'science';
+  return 'tech';
 };
-
 
 function App() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hoveredCard, setHoveredCard] = useState(null);
   const [animationPhase, setAnimationPhase] = useState(0);
-
-  // --- Supporting state and refs for the new useEffect ---
   const [error, setError] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const pollingTimer = useRef(null);
 
-
-    // ==================================================================
-  // --- MODIFIED useEffect FUNCTION ---
-  // ==================================================================
+  // Fetch news
   useEffect(() => {
     const fetchNews = async () => {
-      if(!loading) {
-          setIsUpdating(true);
-      }
+      if(!loading) setIsUpdating(true);
 
       try {
         const response = await fetch(`${API_BASE}`);
@@ -68,16 +61,11 @@ function App() {
         }
 
         const jsonData = await response.json();
-        
-        // Add categories and sort by rank
         const dataWithCategory = jsonData.map(story => ({
           ...story,
           category: getCategoryFromTitle(story.Title)
         }));
-        
-        // --- ADDED: Sort the data by the Rank property ---
         dataWithCategory.sort((a, b) => a.Rank - b.Rank);
-        
         setData(dataWithCategory);
 
       } catch (err) {
@@ -87,8 +75,6 @@ function App() {
       } finally {
         setLoading(false);
         setTimeout(() => setIsUpdating(false), 1000); 
-        
-        // Schedule the next fetch in 10 seconds
         pollingTimer.current = setTimeout(fetchNews, 10000);
       }
     };
@@ -96,30 +82,20 @@ function App() {
     fetchNews();
 
     return () => {
-      if (pollingTimer.current) {
-        clearTimeout(pollingTimer.current);
-      }
+      if (pollingTimer.current) clearTimeout(pollingTimer.current);
     };
   }, []);
 
   // Keep Scraper Alive
   useEffect(() => {
     const SCRAPER_URL = "https://hackernewsscraper-7x6b.onrender.com/";
-  
-    const keepAlive = () => {
-      fetch(SCRAPER_URL, { mode: "no-cors" }).catch(() => {});
-    };
-  
-    keepAlive(); // hit once immediately
-    const interval = setInterval(keepAlive, 30000); // every 30s
-  
+    const keepAlive = () => fetch(SCRAPER_URL, { mode: "no-cors" }).catch(() => {});
+    keepAlive();
+    const interval = setInterval(keepAlive, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  
-  const handleCardClick = (link) => {
-    window.open(link, '_blank', 'noopener,noreferrer');
-  };
+  const handleCardClick = (link) => window.open(link, '_blank', 'noopener,noreferrer');
 
   if (error) {
     return (
@@ -140,7 +116,6 @@ function App() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center overflow-hidden">
         <div className="relative">
-          {/* Animated Background Elements */}
           <div className="absolute -top-20 -left-20 w-40 h-40 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full blur-xl opacity-20 animate-pulse"></div>
           <div className="absolute -bottom-20 -right-20 w-32 h-32 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full blur-xl opacity-20 animate-bounce"></div>
           
@@ -151,7 +126,6 @@ function App() {
                   <TrendingUp className="w-8 h-8 text-white animate-pulse" />
                 </div>
               </div>
-              {/* Orbiting elements */}
               <div className="absolute top-0 left-0 w-full h-full animate-spin" style={{ animationDuration: '3s' }}>
                 <div className="absolute -top-2 left-1/2 w-3 h-3 bg-pink-400 rounded-full animate-pulse"></div>
                 <div className="absolute top-1/2 -right-2 w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
@@ -159,7 +133,6 @@ function App() {
                 <div className="absolute top-1/2 -left-2 w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
               </div>
             </div>
-            
             <div className="space-y-2">
               <h2 className="text-3xl font-black bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent animate-pulse">
                 Loading Epic Stories...
@@ -193,31 +166,28 @@ function App() {
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/10 border-b border-purple-500/20 shadow-2xl">
         <div className="max-w-7xl mx-auto px-6 py-6">
-
-        {/* MY Info */}
-                        {/* Creator Links */}
-              <div className="flex justify-end mb-4">
-                <div className="flex gap-4 text-sm font-bold">
-                  <a
-                    href="https://github.com/Anjas2005/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-purple-300 hover:text-white transition"
-                  >
-                    GitHub
-                  </a>
-                  <span className="text-purple-400">|</span>
-                  <a
-                    href="https://www.linkedin.com/in/anjas-vaidya2020/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-cyan-300 hover:text-white transition"
-                  >
-                    LinkedIn
-                  </a>
-                </div>
-              </div>
-
+          {/* Creator Links */}
+          <div className="flex justify-end mb-4">
+            <div className="flex gap-4 text-sm font-bold">
+              <a
+                href="https://github.com/Anjas2005/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-purple-300 hover:text-white transition"
+              >
+                GitHub
+              </a>
+              <span className="text-purple-400">|</span>
+              <a
+                href="https://www.linkedin.com/in/anjas-vaidya2020/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-cyan-300 hover:text-white transition"
+              >
+                LinkedIn
+              </a>
+            </div>
+          </div>
 
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -274,63 +244,48 @@ function App() {
                   animation: `slideInUp 0.6s ease-out forwards`
                 }}
               >
-                {/* Animated Background Gradient */}
+                {/* Card content ... same as before */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${colorGradient} opacity-0 group-hover:opacity-10 rounded-3xl transition-opacity duration-500`}></div>
-                
-                {/* Floating Rank Badge */}
                 <div className="absolute -left-4 -top-4 z-20">
                   <div className={`w-12 h-12 bg-gradient-to-br ${colorGradient} rounded-full flex items-center justify-center text-white font-black text-lg shadow-2xl transform group-hover:scale-125 group-hover:rotate-12 transition-all duration-300`}>
                     {story.Rank}
                   </div>
                   <div className={`absolute inset-0 bg-gradient-to-br ${colorGradient} rounded-full blur opacity-50 animate-pulse`}></div>
                 </div>
-
-                {/* Category Icon */}
                 <div className="absolute top-6 right-6">
                   <div className={`w-10 h-10 bg-gradient-to-br ${colorGradient} rounded-full flex items-center justify-center shadow-lg group-hover:animate-spin`}>
                     <CategoryIcon className="w-5 h-5 text-white" />
                   </div>
                 </div>
-
                 <div className="p-8 pt-12">
-                  {/* Title */}
                   <h3 className="text-2xl font-black text-white mb-6 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-pink-400 group-hover:via-purple-400 group-hover:to-cyan-400 group-hover:bg-clip-text transition-all duration-300 leading-tight">
                     {story.Title}
                   </h3>
-
-                  {/* Meta Information */}
                   <div className="flex flex-wrap items-center gap-6 text-purple-200 mb-6">
                     <div className="flex items-center space-x-2 bg-gradient-to-r from-pink-500/20 to-purple-500/20 px-4 py-2 rounded-full border border-pink-400/30">
                       <ArrowUp className="w-5 h-5 text-pink-400 animate-bounce" />
                       <span className="font-black text-white">{story.Points}</span>
                     </div>
-                    
                     <div className="flex items-center space-x-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 px-4 py-2 rounded-full border border-cyan-400/30">
                       <User className="w-5 h-5 text-cyan-400" />
                       <span className="font-bold text-cyan-300">{story.Author}</span>
                     </div>
-                    
                     <div className="flex items-center space-x-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 px-4 py-2 rounded-full border border-green-400/30">
                       <Clock className="w-5 h-5 text-green-400 animate-pulse" />
                       <span className="font-bold text-green-300">{story.Post_Time}</span>
                     </div>
                   </div>
-
-                  {/* Action Bar */}
                   <div className="flex items-center justify-between pt-6 border-t border-white/10">
                     <button className="flex items-center space-x-3 text-purple-300 hover:text-white transition-colors duration-300 bg-gradient-to-r from-purple-500/20 to-pink-500/20 px-6 py-3 rounded-full border border-purple-400/30 hover:border-purple-400/50 hover:scale-105 transform">
                       <MessageCircle className="w-5 h-5 animate-pulse" />
                       <span className="font-bold">💬 Discuss</span>
                     </button>
-                    
                     <div className="flex items-center space-x-3 text-cyan-300 group-hover:text-white transition-colors duration-300 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 px-6 py-3 rounded-full border border-cyan-400/30 group-hover:border-cyan-400/50 group-hover:scale-105 transform">
                       <span className="font-bold">🚀 Read Story</span>
                       <ExternalLink className="w-5 h-5 transform group-hover:scale-125 group-hover:rotate-12 transition-all duration-300" />
                     </div>
                   </div>
                 </div>
-
-                {/* Hover Particles Effect */}
                 <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
                   <div className="absolute top-4 left-8 w-2 h-2 bg-pink-400 rounded-full animate-ping"></div>
                   <div className="absolute top-12 right-12 w-1 h-1 bg-cyan-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
@@ -342,7 +297,6 @@ function App() {
           })}
         </div>
 
-        {/* Epic Footer */}
         <footer className="mt-20 py-12 text-center">
           <div className="inline-flex items-center space-x-4 px-8 py-4 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-cyan-500/20 backdrop-blur-sm rounded-full border border-purple-400/30 hover:scale-110 transform transition-all duration-300">
             <div className="flex space-x-2">
