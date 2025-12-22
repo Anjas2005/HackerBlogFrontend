@@ -193,6 +193,32 @@ function App() {
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/10 border-b border-purple-500/20 shadow-2xl">
         <div className="max-w-7xl mx-auto px-6 py-6">
+
+        {/* MY Info */}
+                        {/* Creator Links */}
+              <div className="flex justify-end mb-4">
+                <div className="flex gap-4 text-sm font-bold">
+                  <a
+                    href="https://github.com/Anjas2005/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-purple-300 hover:text-white transition"
+                  >
+                    GitHub
+                  </a>
+                  <span className="text-purple-400">|</span>
+                  <a
+                    href="https://www.linkedin.com/in/anjas-vaidya2020/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-cyan-300 hover:text-white transition"
+                  >
+                    LinkedIn
+                  </a>
+                </div>
+              </div>
+
+
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="relative group">
