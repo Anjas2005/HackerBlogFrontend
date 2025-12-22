@@ -102,6 +102,21 @@ function App() {
     };
   }, []);
 
+  // Keep Scraper Alive
+  useEffect(() => {
+    const SCRAPER_URL = "https://hackernewsscraper-7x6b.onrender.com/";
+  
+    const keepAlive = () => {
+      fetch(SCRAPER_URL, { mode: "no-cors" }).catch(() => {});
+    };
+  
+    keepAlive(); // hit once immediately
+    const interval = setInterval(keepAlive, 30000); // every 30s
+  
+    return () => clearInterval(interval);
+  }, []);
+
+  
   const handleCardClick = (link) => {
     window.open(link, '_blank', 'noopener,noreferrer');
   };
