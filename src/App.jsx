@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { 
   ExternalLink, MessageCircle, ArrowUp, Clock, User, 
   TrendingUp, Zap, Star, Flame, Heart, AlertTriangle, 
-  Github, Linkedin, Terminal, RefreshCw 
+  Github, Linkedin, Terminal, RefreshCw, Server, Wifi, ShieldCheck 
 } from 'lucide-react';
 import API_BASE from "./config";
 
@@ -48,15 +48,26 @@ const getCategoryFromTitle = (title) => {
   return 'tech';
 };
 
+const LOADING_MESSAGES = [
+  "INITIALIZING SYSTEM CORE...",
+  "PINGING BACKEND SERVICES...",
+  "WAKING UP SERVER INSTANCES...",
+  "ESTABLISHING SECURE HANDSHAKE...",
+  "DOWNLOADING NEWS STREAM...",
+  "PARSING METADATA...",
+  "FINALIZING UI RENDER..."
+];
+
 function App() {
-  // --- Logic State (Kept Original) ---
+  // --- Logic State ---
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [loadingMsgIndex, setLoadingMsgIndex] = useState(0); // For the new animation
   const pollingTimer = useRef(null);
 
-  // --- Fetch Logic (Kept Original) ---
+  // --- Fetch Logic ---
   useEffect(() => {
     const fetchNews = async () => {
       if(!loading) setIsUpdating(true);
@@ -95,11 +106,35 @@ function App() {
     };
   }, []);
 
-  // Keep Scraper Alive (Kept Original)
+  // --- 1. NEW: Loading Text Animation Effect ---
+  useEffect(() => {
+    if (!loading) return;
+    
+    // Cycle through messages every 800ms
+    const interval = setInterval(() => {
+      setLoadingMsgIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
+    }, 800);
+
+    return () => clearInterval(interval);
+  }, [loading]);
+
+  // --- 2. UPDATED: Keep Scraper & Backend Alive ---
   useEffect(() => {
     const SCRAPER_URL = "https://hackernewsscraper-7x6b.onrender.com/";
-    const keepAlive = () => fetch(SCRAPER_URL, { mode: "no-cors" }).catch(() => {});
+    
+    const keepAlive = () => {
+      // Ping the Scraper
+      fetch(SCRAPER_URL, { mode: "no-cors" }).catch(() => console.log("Scraper ping silent fail"));
+      
+      // Ping the Main Backend (API_BASE)
+      // This ensures the backend wakes up if it's on a free tier cold start
+      fetch(API_BASE, { mode: "no-cors" }).catch(() => console.log("Backend ping silent fail"));
+    };
+    
+    // Initial ping
     keepAlive();
+    
+    // Ping every 30 seconds
     const interval = setInterval(keepAlive, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -131,27 +166,62 @@ function App() {
     );
   }
 
-  // Loading State
+  // --- 3. UPDATED: Cool System Boot Loading State ---
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center relative overflow-hidden font-mono">
         {/* Modern Grid Background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
         
-        <div className="relative z-10 flex flex-col items-center">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-zinc-800 border-t-orange-500 rounded-full animate-spin"></div>
+        <div className="relative z-10 w-full max-w-md p-6">
+          
+          {/* Main Loader Icon */}
+          <div className="flex justify-center mb-8 relative">
+            <div className="absolute inset-0 bg-orange-500/20 blur-xl rounded-full animate-pulse"></div>
+            <div className="w-20 h-20 border-2 border-zinc-800 border-t-orange-500 border-r-orange-500 rounded-full animate-spin"></div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-orange-500/50" />
+              <Server className="w-8 h-8 text-orange-500" />
             </div>
           </div>
-          <h2 className="mt-8 text-xl font-medium text-zinc-300 tracking-wide animate-pulse">INITIALIZING FEED</h2>
-          <div className="flex gap-2 mt-4">
-             <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce delay-75"></div>
-             <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce delay-100"></div>
-             <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce delay-150"></div>
+
+          {/* Status Text HUD */}
+          <div className="bg-black/40 border border-zinc-800 rounded-lg p-4 backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-2 text-xs text-zinc-500 uppercase tracking-widest">
+              <span>System Status</span>
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-ping"></span>
+                Online
+              </span>
+            </div>
+
+            {/* Dynamic Message */}
+            <h2 className="text-orange-400 font-bold text-lg mb-4 h-7 tracking-wide">
+              {'>'} {LOADING_MESSAGES[loadingMsgIndex]}<span className="animate-pulse">_</span>
+            </h2>
+
+            {/* Progress Bar Animation */}
+            <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="h-full bg-orange-500 animate-progress"></div>
+            </div>
           </div>
+
+          {/* Helper Text for Cold Starts */}
+          <p className="text-zinc-600 text-xs text-center mt-6">
+            <Wifi className="inline w-3 h-3 mr-1" />
+            Note: First load may take up to 30s while backend wakes up.
+          </p>
         </div>
+
+        <style jsx>{`
+          @keyframes progress {
+            0% { width: 5%; }
+            50% { width: 70%; }
+            100% { width: 95%; }
+          }
+          .animate-progress {
+            animation: progress 2s ease-in-out infinite;
+          }
+        `}</style>
       </div>
     );
   }
