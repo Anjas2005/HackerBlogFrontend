@@ -2,17 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { 
   ExternalLink, MessageCircle, ArrowUp, Clock, User, 
   TrendingUp, Zap, Star, Flame, Heart, AlertTriangle, 
-  Github, Linkedin, Terminal, RefreshCw, Server, Radio 
+  Github, Linkedin, Terminal, RefreshCw, Server, Radio, Wifi 
 } from 'lucide-react';
+import API_BASE from "./config";
 
-// --- CONFIGURATION MANAGEMENT ---
-// We load these from the Environment Variables set in Render.
-// If the variable isn't found, it falls back to an empty string or a default.
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api"; // Default to localhost for dev
-const SCRAPER_URL_ENV = import.meta.env.VITE_SCRAPER_URL;
-const BACKEND_URL_ENV = import.meta.env.VITE_BACKEND_URL;
+// --- Configuration & Constants ---
 
-// --- CONSTANTS ---
 const categoryColors = {
   security: "text-red-400 border-red-500/50 shadow-red-500/20",
   show: "text-purple-400 border-purple-500/50 shadow-purple-500/20",
@@ -59,18 +54,15 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [loadingStep, setLoadingStep] = useState(0); 
+  const [loadingStep, setLoadingStep] = useState(0); // For the loading animation text
   const pollingTimer = useRef(null);
 
-  // --- Fetch Logic (Main Data) ---
+  // --- Fetch Logic ---
   useEffect(() => {
     const fetchNews = async () => {
       if(!loading) setIsUpdating(true);
 
       try {
-        // SECURITY UPDATE: Using the variable from ENV
-        if (!API_BASE) throw new Error("API URL not configured in Environment");
-        
         const response = await fetch(`${API_BASE}`);
 
         if (!response.ok) {
@@ -102,22 +94,15 @@ function App() {
     return () => {
       if (pollingTimer.current) clearTimeout(pollingTimer.current);
     };
-  }, []); // Removed 'loading' from dependency to prevent infinite loops on mount
+  }, []);
 
   // --- Keep Alive Logic (Dual Ping) ---
   useEffect(() => {
-    // SECURITY UPDATE: Using variables from ENV
-    const SCRAPER_URL = SCRAPER_URL_ENV;
-    const BACKEND_URL = BACKEND_URL_ENV;
-
-    if (!SCRAPER_URL || !BACKEND_URL) {
-      console.warn("Keep-alive URLs are missing from Environment Variables");
-      return;
-    }
+    const SCRAPER_URL = "https://hackernewsscraper-7x6b.onrender.com/";
+    const BACKEND_URL = "https://hackerblogbackend.onrender.com"; // Added Backend URL
 
     const keepAlive = () => {
-      // mode: 'no-cors' is used because we don't need the response, 
-      // we just want to trigger the server to wake up.
+      // We use no-cors because we just want to hit the server to wake it up, we don't need the response here
       fetch(SCRAPER_URL, { mode: "no-cors" }).catch(() => console.log("Waking Scraper..."));
       fetch(BACKEND_URL, { mode: "no-cors" }).catch(() => console.log("Waking Backend..."));
     };
@@ -164,9 +149,6 @@ function App() {
             <h2 className="text-2xl font-bold text-center mb-2 tracking-tight">Connection Lost</h2>
             <p className="text-zinc-400 text-center font-mono text-sm mb-6 bg-black/50 p-3 rounded border border-zinc-800">
               {error}
-            </p>
-            <p className="text-zinc-500 text-xs text-center mb-4">
-              Check if VITE_API_BASE_URL is set in Render.
             </p>
             <button onClick={() => window.location.reload()} className="w-full py-3 bg-red-600 hover:bg-red-500 transition-colors rounded-lg font-bold flex items-center justify-center gap-2">
               <RefreshCw className="w-4 h-4" /> Retry Connection
