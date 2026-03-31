@@ -1,24 +1,16 @@
 name: Keep Render Apps Awake
 
 on:
-schedule:
-- cron: "*/10 * * * *"
-workflow_dispatch:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
 
 jobs:
-ping:
-runs-on: ubuntu-latest
-steps:
-- name: Ping all services
-run: |
-urls=(
-"https://hackerblogbackend.onrender.com"
-"https://hackernewsscraper-7x6b.onrender.com"
-)
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend
+        run: curl -s --max-time 30 --retry 3 --retry-delay 5 https://hackerblogbackend.onrender.com || true
 
-```
-      for url in "${urls[@]}"; do
-        echo "Pinging $url"
-        curl -s --max-time 30 --retry 3 --retry-delay 5 "$url" || true
-      done
-```
+      - name: Ping scraper
+        run: curl -s --max-time 30 --retry 3 --retry-delay 5 https://hackernewsscraper-7x6b.onrender.com || true
